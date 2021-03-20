@@ -124,8 +124,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = [path.join(BASE_DIR, 'space_ocean', 'static')]
+STATIC_ROOT = path.join(BASE_DIR, 'static-files')
+STATICFILES_DIRS = [path.join(BASE_DIR, 'static')]
 
 LOGIN_REDIRECT_URL = 'logged-in'
 LOGOUT_REDIRECT_URL = 'thanks'
