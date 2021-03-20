@@ -27,5 +27,5 @@ urlpatterns = [
     path('groups/', include('groups.urls'), name='groups'),
     path('posts/', include('posts.urls'), name='posts'),
     path('thanks/', views.ThanksPage.as_view(), name='thanks'),
-    path('test/', views.TestPage.as_view(), name='test')
+    path('logged-in/', views.LoggedInPage.as_view(), name='logged-in')
 ]
