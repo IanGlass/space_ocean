@@ -1,1 +1,1 @@
-web: gunicorn space_ocean.wsgi
+web: python manage.py runserver
