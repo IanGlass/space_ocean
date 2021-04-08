@@ -70,3 +70,22 @@ def test_join_group_failure(login, create_group):
     response = login.get('/groups/join/i_dont_exist')
 
     assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_leave_group_success(login, create_group):
+    GroupMember.objects.create(group=create_group, user=user)
+
+    response = login.get('/groups/leave/' + create_group.slug)
+
+    assert response.status_code == 302
+    assert str(list(get_messages(response.wsgi_request))[
+               0]) == 'You have left the group', 'Incorrect flash message'
+
+@pytest.mark.django_db
+def test_leave_group_failure(login, create_group):
+    response = login.get('/groups/leave/i_dont_exist')
+
+    assert response.status_code == 302
+    assert str(list(get_messages(response.wsgi_request))[
+               0]) == 'Sorry you are not in this group', 'Incorrect flash message'
