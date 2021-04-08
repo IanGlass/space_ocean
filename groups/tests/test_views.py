@@ -51,3 +51,22 @@ def test_create_group(login):
 
     created_group = Group.objects.get(name='Mars United')
     assert created_group.name == 'Mars United'
+
+
+@pytest.mark.django_db
+def test_join_group_success(login, create_group):
+    response = login.get('/groups/join/' + create_group.slug)
+
+    assert response.status_code == 302
+    assert str(list(get_messages(response.wsgi_request))[
+               0]) == 'You are now a member of the {} group.'.format(create_group.name), 'Incorrect flash message'
+
+    created_group_member = GroupMember.objects.get(user=user)
+    assert created_group_member is not None
+
+
+@pytest.mark.django_db
+def test_join_group_failure(login, create_group):
+    response = login.get('/groups/join/i_dont_exist')
+
+    assert response.status_code == 404
