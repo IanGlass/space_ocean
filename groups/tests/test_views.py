@@ -18,3 +18,9 @@ def create_group():
 def test_list_groups(client):
     response = client.get('/groups/')
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_single_group(client, create_group):
+    response = client.get('/groups/details/' + create_group.slug)
+    assert response.status_code == 200
