@@ -28,12 +28,7 @@ class JoinGroup(LoginRequiredMixin, RedirectView):
     def get(self, request, *args, **kwargs):
         group = get_object_or_404(Group, slug=self.kwargs.get('slug'))
 
-        # try:
         GroupMember.objects.create(user=self.request.user, group=group)
-
-        # except:
-        # messages.warning(self.request, "Warning, already a member of {}".format(group.name))
-
         messages.success(
             self.request, "You are now a member of the {} group.".format(group.name))
 
