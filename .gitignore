@@ -4,3 +4,6 @@
 venv/*
 
 .vscode
+
+/staticfiles
+.coveragerc
