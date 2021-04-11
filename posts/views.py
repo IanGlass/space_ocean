@@ -14,7 +14,7 @@ from . import forms
 User = get_user_model()
 
 
-class PostListView(SelectRelatedMixin, ListView):
+class PostList(SelectRelatedMixin, ListView):
     model = models.Post
     select_related = ('user', 'group')
 
@@ -25,7 +25,7 @@ class UserPosts(ListView):
 
     def get_queryset(self):
         try:
-            self.post.user = User.objects.prefetch_related('posts').get(
+            self.post_user = User.objects.prefetch_related('posts').get(
                 username__iexact=self.kwargs.get('username'))
 
         # Catch DoesNotExist exceptions thrown by trying to fetch a no existant row in the User table
