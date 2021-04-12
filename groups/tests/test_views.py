@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
-from django.template.loader import render_to_string
 from django.test import TestCase, Client
 
 from groups.models import Group, GroupMember
@@ -24,7 +23,7 @@ class CreateGroupTest(TestCase):
         login(client=self.client)
 
     def test_view(self):
-        response = self.client.post('/groups/new/', {
+        response = self.client.post('/groups/new', {
             'name': 'Mars United',
             'description': 'The United Federation of Mars'
         })
