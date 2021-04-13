@@ -2,18 +2,17 @@ from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
 
 import pytest
-from pytest_django.asserts import assertTemplateUsed, assertRedirects
+from pytest_django.asserts import assertTemplateUsed, assertRedirects, assertContains
 
 from groups.models import Group, GroupMember
 
-@pytest.mark.django_db
+
 @pytest.fixture(autouse=True)
 def create_user():
     global user
     user = User.objects.create(username='Leeroy Jenkins', password='yeet')
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def login(client):
     client.force_login(user)
@@ -21,7 +20,6 @@ def login(client):
     return client
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def create_group():
     return Group.objects.create(name='Solar City', description='All things solar')
@@ -87,11 +85,11 @@ def test_leave_group_success(login, create_group):
     assert str(list(get_messages(response.wsgi_request))[
         0]) == 'You have left the group'
 
+
 @pytest.mark.django_db
 def test_leave_group_failure(login, create_group):
-  response = login.get('/groups/leave/i_dont_exist')
+    response = login.get('/groups/leave/i_dont_exist')
 
-  assert response.status_code == 302
-  assert str(list(get_messages(response.wsgi_request))[
-      0]) == 'Sorry you are not in this group'
-
+    assert response.status_code == 302
+    assert str(list(get_messages(response.wsgi_request))[
+        0]) == 'Sorry you are not in this group'

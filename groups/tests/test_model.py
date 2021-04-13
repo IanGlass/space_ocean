@@ -8,14 +8,12 @@ import pytest
 from groups.models import Group, GroupMember
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def create_user():
     global user
     user = User.objects.create(username='Test user', password='test_password')
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def create_group(create_user):
     global group
@@ -23,7 +21,6 @@ def create_group(create_user):
         name='The group', description='The group for everything')
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def create_group_member(create_group):
     global group_member

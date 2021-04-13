@@ -14,7 +14,6 @@ def create_user():
     user = User.objects.create(username='Leeroy Jenkins', password='yeet')
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def login(client):
     client.force_login(user)
@@ -22,7 +21,6 @@ def login(client):
     return client
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def create_group():
     return Group.objects.create(name='Solar City', description='All things solar')

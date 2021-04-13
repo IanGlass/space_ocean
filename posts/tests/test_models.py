@@ -9,14 +9,12 @@ from posts.models import Post
 from groups.models import Group
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def create_user():
     global user
     user = User.objects.create(username='Test user', password='test_password')
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def create_group(create_user):
     global group
@@ -24,7 +22,6 @@ def create_group(create_user):
         name='The group', description='The group for everything')
 
 
-@pytest.mark.django_db
 @pytest.fixture()
 def create_post(create_group):
     global post
