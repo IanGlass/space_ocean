@@ -1,39 +1,50 @@
-from django.test import TestCase
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.urls import reverse
 
 import misaka
+import pytest
 
 from groups.models import Group, GroupMember
 
 
-def create_group():
-    return Group.objects.create(
+@pytest.mark.django_db
+@pytest.fixture()
+def create_user():
+    global user
+    user = User.objects.create(username='Test user', password='test_password')
+
+
+@pytest.mark.django_db
+@pytest.fixture()
+def create_group(create_user):
+    global group
+    group = Group.objects.create(
         name='The group', description='The group for everything')
 
 
-class GroupModelTest(TestCase):
-    def setUp(self):
-        self.group = create_group()
-
-    def test_string_representation(self):
-        self.assertEqual(str(self.group), self.group.name)
-
-    def test_slug(self):
-        self.assertEqual(self.group.slug, slugify(self.group.name))
-
-    def test_description_html(self):
-        self.assertEqual(self.group.description_html,
-                         misaka.html(self.group.description))
+@pytest.mark.django_db
+@pytest.fixture()
+def create_group_member(create_group):
+    global group_member
+    group_member = GroupMember.objects.create(user=user, group=group)
 
 
-class GroupMemberTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(
-            username='Test user', password='test_password')
-        self.group = create_group()
-        self.group_member = GroupMember.objects.create(user=self.user, group=self.group)
+@pytest.mark.django_db
+def test_group_string_representation(create_group):
+    assert str(group) == group.name
 
-    def test_string_representation(self):
-      self.assertEqual(str(self.group_member), self.user.username)
+
+@pytest.mark.django_db
+def test_group_slug(create_group):
+    assert group.slug == slugify(group.name)
+
+
+@pytest.mark.django_db
+def test_group_description_html(create_group):
+    assert group.description_html == misaka.html(group.description)
+
+
+@pytest.mark.django_db
+def test_group_member_string_representation(create_group_member):
+    assert str(group_member) == user.username

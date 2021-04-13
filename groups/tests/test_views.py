@@ -1,105 +1,97 @@
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
-from django.test import TestCase, Client
+
+import pytest
+from pytest_django.asserts import assertTemplateUsed, assertRedirects
 
 from groups.models import Group, GroupMember
 
+@pytest.mark.django_db
+@pytest.fixture(autouse=True)
+def create_user():
+    global user
+    user = User.objects.create(username='Leeroy Jenkins', password='yeet')
 
+
+@pytest.mark.django_db
+@pytest.fixture()
 def login(client):
-    user = User.objects.create(username='Test User', password='Very Secure')
-
     client.force_login(user)
 
-    return user
+    return client
 
 
+@pytest.mark.django_db
+@pytest.fixture()
 def create_group():
     return Group.objects.create(name='Solar City', description='All things solar')
 
 
-class CreateGroupTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        login(client=self.client)
+@pytest.mark.django_db
+def test_create_group(login):
+    response = login.post('/groups/new', {
+        'name': 'Mars United',
+        'description': 'The United Federation of Mars'
+    })
 
-    def test_view(self):
-        response = self.client.post('/groups/new', {
-            'name': 'Mars United',
-            'description': 'The United Federation of Mars'
-        })
+    group = Group.objects.get(name='Mars United')
+    assert group.name == 'Mars United'
 
-        group = Group.objects.get(name='Mars United')
-        self.assertEqual(group.name, 'Mars United')
-
-        self.assertRedirects(response, '/groups/details/' + group.slug)
+    assertRedirects(response, '/groups/details/' + group.slug)
 
 
-class ListGroupsTest(TestCase):
-    def setUp(self):
-        self.group = create_group()
-        self.client = Client()
+@pytest.mark.django_db
+def test_list_group(client, create_group):
+    response = client.get('/groups/')
 
-    def test_view(self):
-        response = self.client.get('/groups/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'groups/group_list.html')
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'groups/group_list.html')
 
 
-class SingleGroupTest(TestCase):
-    def setUp(self):
-        self.group = create_group()
-        self.client = Client()
+@pytest.mark.django_db
+def test_single_group(client, create_group):
+    response = client.get('/groups/details/' + create_group.slug)
 
-    def test_view(self):
-        response = self.client.get('/groups/details/' + self.group.slug)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'groups/group_detail.html')
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'groups/group_detail.html')
 
 
-class JoinGroupTest(TestCase):
-    def setUp(self):
-        self.group = create_group()
-        self.client = Client()
-        self.user = login(client=self.client)
+@pytest.mark.django_db
+def test_join_group_success(login, create_group):
+    response = login.get('/groups/join/' + create_group.slug)
 
-    def test_view_success(self):
-        response = self.client.get('/groups/join/' + self.group.slug)
+    assertRedirects(response, '/groups/details/' + create_group.slug)
 
-        self.assertRedirects(response, '/groups/details/' + self.group.slug)
+    group_member = GroupMember.objects.get(
+        group=create_group, user=user)
 
-        group_member = GroupMember.objects.get(
-            group=self.group, user=self.user)
-
-        self.assertIsNotNone(group_member)
-        self.assertEqual(str(list(get_messages(response.wsgi_request))[
-            0]), 'You are now a member of the {} group.'.format(self.group.name))
-
-    def test_view_failure(self):
-        response = self.client.get('/groups/join/i_dont_exist')
-
-        self.assertEqual(response.status_code, 404)
+    assert group_member is not None
+    assert str(list(get_messages(response.wsgi_request))[
+               0]) == 'You are now a member of the {} group.'.format(create_group.name)
 
 
-class LeaveGroupTest(TestCase):
-    def setUp(self):
-        self.group = create_group()
-        self.client = Client()
-        self.user = login(client=self.client)
-        self.group_member = GroupMember.objects.create(
-            group=self.group, user=self.user)
+@pytest.mark.django_db
+def test_join_group_failure(login, create_group):
+    response = login.get('/groups/join/i_dont_exist')
 
-    def test_view_success(self):
-        response = self.client.get('/groups/leave/' + self.group.slug)
+    assert response.status_code == 404
 
-        self.assertRedirects(response, '/groups/details/' + self.group.slug)
-        self.assertEqual(str(list(get_messages(response.wsgi_request))[
-            0]), 'You have left the group')
 
-    def test_view_failure(self):
-        response = self.client.get('/groups/leave/i_dont_exist')
+@pytest.mark.django_db
+def test_leave_group_success(login, create_group):
+    group_member = GroupMember.objects.create(group=create_group, user=user)
 
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(str(list(get_messages(response.wsgi_request))[
-            0]), 'Sorry you are not in this group')
+    response = login.get('/groups/leave/' + create_group.slug)
+
+    assertRedirects(response, '/groups/details/' + create_group.slug)
+    assert str(list(get_messages(response.wsgi_request))[
+        0]) == 'You have left the group'
+
+@pytest.mark.django_db
+def test_leave_group_failure(login, create_group):
+  response = login.get('/groups/leave/i_dont_exist')
+
+  assert response.status_code == 302
+  assert str(list(get_messages(response.wsgi_request))[
+      0]) == 'Sorry you are not in this group'
+

@@ -1,107 +1,97 @@
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
-from django.test import TestCase, Client
+
+import pytest
+from pytest_django.asserts import assertTemplateUsed, assertRedirects
 
 from posts.models import Post
 from groups.models import Group
 
 
+@pytest.fixture(autouse=True)
 def create_user():
-    return User.objects.create(
-        username='Leeroy Jenkins', password='Yeet')
+    global user
+    user = User.objects.create(username='Leeroy Jenkins', password='yeet')
 
 
+@pytest.mark.django_db
+@pytest.fixture()
+def login(client):
+    client.force_login(user)
+
+    return client
+
+
+@pytest.mark.django_db
+@pytest.fixture()
 def create_group():
-    return Group.objects.create(
-        name='Post group', description='Post description')
+    return Group.objects.create(name='Solar City', description='All things solar')
 
 
-def create_post(group, user):
+@pytest.mark.django_db
+def create_post(group):
     return Post.objects.create(
         user=user, group=group, message='Yeah boy')
 
 
-class PostListTest(TestCase):
-    def setUp(self):
-        self.client = Client()
+@pytest.mark.django_db
+def test_post_list(client):
+    response = client.get('/posts/')
 
-    def test_view(self):
-        response = self.client.get('/posts/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'posts/post_list.html')
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'posts/post_list.html')
 
 
-class UserPostsTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = create_user()
-        self.group = create_group()
-        self.post = create_post(group=self.group, user=self.user)
+@pytest.mark.django_db
+def test_user_post_success(login, create_group):
+    post = create_post(group=create_group)
+    response = login.get('/posts/by/' + user.username)
 
-    def test_view_success(self):
-        response = self.client.get('/posts/by/' + self.user.username)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'posts/user_post_list.html')
-
-    def test_view_failure(self):
-        response = self.client.get('/posts/by/not_a_chance')
-
-        self.assertEqual(response.status_code, 404)
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'posts/user_post_list.html')
 
 
-class PostDetailTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = create_user()
-        self.group = create_group()
-        self.post = create_post(group=self.group, user=self.user)
+@pytest.mark.django_db
+def test_user_post_failure(login, create_group):
+    response = login.get('/posts/by/not_a_chance')
 
-    def test_view_success(self):
-        response = self.client.get(
-            '/posts/by/' + self.user.username + '/' + str(self.post.id))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'posts/post_detail.html')
-
-    def test_view_failure(self):
-        response = self.client.get(
-            '/posts/by/' + self.user.username + '/not_a_post')
-
-        self.assertEqual(response.status_code, 404)
+    assert response.status_code == 404
 
 
-class CreatePostTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = create_user()
-        self.client.force_login(user=self.user)
-        self.group = create_group()
+@pytest.mark.django_db
+def test_post_detail_success(login, create_group):
+    post = create_post(group=create_group)
+    response = login.get('/posts/by/' + user.username + '/' + str(post.id))
 
-    def test_view_success(self):
-        response = self.client.post('/posts/new', {
-            'group': self.group.id,
-            'message': 'The best post in the world'
-        })
-
-        self.assertEqual(response.status_code, 302)
-
-        created_post = Post.objects.get(group=self.group)
-        self.assertIsNotNone(created_post)
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'posts/post_detail.html')
 
 
-class DeletePostTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = create_user()
-        self.client.force_login(user=self.user)
-        self.group = create_group()
-        self.post = create_post(group=self.group, user=self.user)
+@pytest.mark.django_db
+def test_post_detail_failure(login, create_group):
+    post = create_post(group=create_group)
+    response = login.get('/posts/by/' + user.username + '/not_a_post')
 
-    def test_view_success(self):
-        response = self.client.delete('/posts/delete/' + str(self.post.id))
+    assert response.status_code == 404
 
-        self.assertRedirects(response, '/posts/')
-        self.assertEqual(
-            str(list(get_messages(response.wsgi_request))[0]), 'Post Deleted')
+
+@pytest.mark.django_db
+def test_create_post(login, create_group):
+    response = login.post('/posts/new', {
+        'group': create_group.id,
+        'message': 'The best post in the world'
+    })
+
+    assert response.status_code == 302
+
+    created_post = Post.objects.get(group=create_group)
+    assert created_post is not None
+
+
+@pytest.mark.django_db
+def test_delete_post(login, create_group):
+    post = create_post(group=create_group)
+    response = login.delete('/posts/delete/' + str(post.id))
+
+    assertRedirects(response, '/posts/')
+    assert str(list(get_messages(response.wsgi_request))[0]) == 'Post Deleted'
