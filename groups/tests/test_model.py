@@ -28,20 +28,18 @@ def create_group_member(create_group):
 
 
 @pytest.mark.django_db
-def test_group_string_representation(create_group):
-    assert str(group) == group.name
+class TestGroup():
+    def test_group_string_representation(self, create_group):
+        assert str(group) == group.name
+
+    def test_group_slug(self, create_group):
+        assert group.slug == slugify(group.name)
+
+    def test_group_description_html(self, create_group):
+        assert group.description_html == misaka.html(group.description)
 
 
 @pytest.mark.django_db
-def test_group_slug(create_group):
-    assert group.slug == slugify(group.name)
-
-
-@pytest.mark.django_db
-def test_group_description_html(create_group):
-    assert group.description_html == misaka.html(group.description)
-
-
-@pytest.mark.django_db
-def test_group_member_string_representation(create_group_member):
-    assert str(group_member) == user.username
+class TestGroupMember():
+    def test_group_member_string_representation(self, create_group_member):
+        assert str(group_member) == user.username

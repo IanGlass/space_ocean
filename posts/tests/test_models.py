@@ -29,10 +29,9 @@ def create_post(create_group):
 
 
 @pytest.mark.django_db
-def test_string_representation(create_post):
-    assert str(post) == post.message
+class TestPosts():
+    def test_string_representation(self, create_post):
+        assert str(post) == post.message
 
-
-@pytest.mark.django_db
-def test_message_html(create_post):
-    assert post.message_html == misaka.html(post.message)
+    def test_message_html(self, create_post):
+        assert post.message_html == misaka.html(post.message)
