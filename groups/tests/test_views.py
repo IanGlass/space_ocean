@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
 
 import pytest
@@ -8,9 +7,9 @@ from groups.models import Group, GroupMember
 
 
 @pytest.fixture(autouse=True)
-def create_user():
+def create_user(django_user_model):
     global user
-    user = User.objects.create(username='Leeroy Jenkins', password='yeet')
+    user = django_user_model.objects.create(username='Leeroy Jenkins', password='yeet')
 
 
 @pytest.fixture()
