@@ -12,7 +12,7 @@ services:
     volumes:
       - .:/code
     environment:
-      DEBUG: "true"
+      DEBUG: "True"
       POSTGRES_HOST: $POSTGRES_HOST
       POSTGRES_USER: $POSTGRES_USER
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
