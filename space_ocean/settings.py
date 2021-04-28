@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 import logging.config
 from pathlib import Path
-from os import path
+from os import path, environ
 from django.utils.log import DEFAULT_LOGGING
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -90,8 +90,12 @@ WSGI_APPLICATION = 'space_ocean.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': environ['POSTGRES_DB'],
+        'USER': environ['POSTGRES_USER'],
+        'PASSWORD': environ['POSTGRES_PASSWORD'],
+        'HOST': environ['POSTGRES_HOST'],
+        'PORT': '5432'
     }
 }
 
