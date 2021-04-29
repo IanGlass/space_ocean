@@ -1,5 +1,11 @@
-FROM python:3
+FROM python:3.8
+
+# RUN apt-get update && apt-get install -y --no-install-recommends gcc
+RUN pip install pipenv
 WORKDIR /code
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
+
+COPY Pipfile .
+COPY Pipfile.lock .
+RUN pipenv install --system --deploy
+
 COPY . .

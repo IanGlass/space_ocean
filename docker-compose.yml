@@ -9,6 +9,9 @@ services:
       - 8000:8000
     depends_on:
       - db
+    networks:
+      space_ocean:
+        ipv4_address: "${NETWORK_IP}.5"
     volumes:
       - .:/code
     environment:
@@ -17,16 +20,20 @@ services:
       POSTGRES_USER: $POSTGRES_USER
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
       POSTGRES_DB: $POSTGRES_DB
+      NETWORK_IP: $NETWORK_IP
     command: sh -c "python manage.py migrate &&
                     python manage.py runserver 0.0.0.0:8000"
 
   db:
-    container_name: "space_ocean_db"
+    container_name: $POSTGRES_HOST
     image: postgres:12.1-alpine
     volumes:
       - dbdata:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      space_ocean:
+        ipv4_address: "${NETWORK_IP}.4"
     environment:
       POSTGRES_USER: $POSTGRES_USER
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
@@ -34,3 +41,10 @@ services:
 
 volumes:
   dbdata:
+
+networks:
+  space_ocean:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "${NETWORK_IP}.1/24"
