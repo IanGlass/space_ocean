@@ -27,7 +27,7 @@ TEMPLATES_DIR = path.join(BASE_DIR, 'templates')
 SECRET_KEY = '!=jp+^2-zw84j8r)-3!_s0+e#6!1ez8m3bu59fnm538-q73ggb'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = environ['DEBUG'] == 'True'
+DEBUG = environ.get('DEBUG') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
@@ -92,10 +92,10 @@ WSGI_APPLICATION = 'space_ocean.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': environ['POSTGRES_DB'],
-        'USER': environ['POSTGRES_USER'],
-        'PASSWORD': environ['POSTGRES_PASSWORD'],
-        'HOST': environ['POSTGRES_HOST'],
+        'NAME': environ.get('POSTGRES_DB'),
+        'USER': environ.get('POSTGRES_USER'),
+        'PASSWORD': environ.get('POSTGRES_PASSWORD'),
+        'HOST': environ.get('POSTGRES_HOST'),
         'PORT': '5432'
     }
 }

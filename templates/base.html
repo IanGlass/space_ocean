@@ -25,7 +25,9 @@
 
   <nav class="navbar mynav" role="navigation" id="navbar">
     <div class="container">
-      <a href="{% url 'home' %}" class="navbar-brand mynav">Space Ocean</a>
+      <div class="navbar-header">
+        <a href="{% url 'home' %}" class="navbar-brand mynav">Space Ocean</a>
+      </div>
 
       <ul class="nav navbar-nav navbar-right">
         {% if user.is_authenticated %}
@@ -51,6 +53,6 @@
   <canvas id="canvas"></canvas>
 </body>
 
-  <script type="text/javascript" src="{% static 'js/master.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/master.js' %}"></script>
 
 </html>
