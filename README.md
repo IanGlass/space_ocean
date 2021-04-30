@@ -1,3 +1,5 @@
 # space_ocean
+Simple forum sight themed around space conversations.
 
-Simple forum site
+`pipenv run dev` - Runs development server and database using docker containers
+`pipenv run test` - Executes the test suite

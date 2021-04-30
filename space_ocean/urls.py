@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from os import environ
 
 from . import settings
 from . import views
@@ -31,7 +32,8 @@ urlpatterns = [
     path('logged-in/', views.LoggedInPage.as_view(), name='logged-in')
 ]
 
-if settings.DEBUG:
+# Only works if we know the docker network ip and is set in settings.INTERNAL_IPS
+if settings.DEBUG and environ.get('NETWORK_IP'):
   import debug_toolbar
   urlpatterns += [
     path('__debug__/', include(debug_toolbar.urls))

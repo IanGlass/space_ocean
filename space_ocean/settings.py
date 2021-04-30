@@ -60,9 +60,10 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-if DEBUG:
+# Set the docker network up to allow debug toolbar during development
+if DEBUG and environ.get('NETWORK_IP'):
   INTERNAL_IPS = [
-    environ['NETWORK_IP'] + '.1'
+    environ.get('NETWORK_IP') + '.1'
   ]
 
 ROOT_URLCONF = 'space_ocean.urls'
