@@ -1,0 +1,33 @@
+version: "3.2"
+services:
+  backend-test:
+    container_name: "space_ocean_backend_test"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - custom-test-net
+    ports:
+      - 5859:5859
+    volumes:
+      - .:/code
+    depends_on:
+      - db-test
+    environment:
+      DEBUG: "True"
+    env_file:
+      - .env.test
+    command: pytest
+
+  db-test:
+    container_name: $POSTGRES_HOST
+    image: postgres:12.1-alpine
+    networks:
+      - custom-test-net
+    environment:
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: $POSTGRES_DB
+
+networks:
+  custom-test-net:
